@@ -15,7 +15,7 @@ timezone: Asia/Shanghai
 
 # jekyll-seo-tag settings › https://github.com/jekyll/jekyll-seo-tag/blob/master/docs/usage.md
 # --------------------------
-title: Chirpy                          # the main title
+title: Layman                          # the main title
 
 tagline: Death is just another path, one that we all must take.   # it will display as the sub-title
 
