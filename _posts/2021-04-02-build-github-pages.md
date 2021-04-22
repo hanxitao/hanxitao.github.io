@@ -74,5 +74,5 @@ http://127.0.0.1:4000/
 1. 修改仓库的名字为github_username.github.io
 ![](/assets/img/favicons/2.png)
 2. 回到github上的仓库，通过*Settings → Options → GitHub Pages*选择gh-pages分支作为发布源
-![](/assets/img/favicons/3.png)
+![](/assets/img/favicons/3.PNG)
 3. 通过https://github_username.github.io即可访问已搭建完成的博客
