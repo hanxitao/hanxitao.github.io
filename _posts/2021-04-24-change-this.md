@@ -62,7 +62,7 @@ Function.prototype.bind_ = function (obj) {
   const args = [...arguments].slice(1);
   const fn = this;
   function bound() {
-    const params = [...arguments].slice(1);
+    const params = [...arguments].slice(0);
     fn.apply(this.constructor === fn ? this : obj, args.concat(params));
   }
 
