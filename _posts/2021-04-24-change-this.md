@@ -59,10 +59,10 @@ Function.prototype.bind_ = function (obj) {
   if (typeof this !== "function") {
     throw new Error("Function.prototype.bind - what is trying to be dound is not callable");
   }
-  const args = [...arguments.slice(1)];
+  const args = [...arguments].slice(1);
   const fn = this;
   function bound() {
-    const params = [...arguments.slice(1)];
+    const params = [...arguments].slice(1);
     fn.apply(this.constructor === fn ? this : obj, args.concat(params));
   }
 
