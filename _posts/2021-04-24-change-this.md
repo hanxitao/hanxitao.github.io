@@ -37,8 +37,9 @@ Function.prototype.apply_ = function (obj, arr) {
 ## 手动实现bind
   - 作用：改变this指向
   - 特点：
-    1. 不会执行函数，而是返回一个绑定了this的新函数
-    2. 无法通过call/apply修改这个新函数的this
+    1. 不会执行函数，而是返回一个绑定了this的新函数bound
+    2. 无法通过call/apply修改新函数bound的this
+    3. 新函数bound可以使用new运算符构造，在构造过程中，已经确定的this会被忽略，返回的实例会继承构造函数的属性与原型属性，并且能正常接收参数
 ```javascript
 const obj = {
   z: 1
@@ -63,7 +64,7 @@ Function.prototype.bind_ = function (obj) {
   const fn = this;
   function bound() {
     const params = [...arguments].slice(0);
-    fn.apply(this.constructor === fn ? this : obj, args.concat(params));
+    return fn.apply(this.constructor === fn ? this : obj, args.concat(params));
   }
 
   function fn_ () {}
