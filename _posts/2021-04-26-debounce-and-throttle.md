@@ -23,7 +23,7 @@ function debounce(func, delay) {
 
 &#8195;**所谓节流，就是指连续触发事件在n秒中只执行一次函数**
 
-定时器版：
+定时器版：开始时不执行，最后时间间隔内再执行一次
 ```javascript
 function throttle(func, delay) {
     let timer;
@@ -39,7 +39,7 @@ function throttle(func, delay) {
 }
 ```
 
-时间戳版：
+时间戳版：开始时立即执行一次，最后时间间隔内不再执行
 ```javascript
 function throttle1(func, delay) {
     let initTime = 0;
