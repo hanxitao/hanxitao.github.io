@@ -67,6 +67,17 @@ function fun() {
   console.log(new.target === fun);
 }
 ```
+
+### 1.2.4 包装对象
+某些场合，原始类型的值会自动当作包装对象调用，即调用包装对象的属性和方法。这时，**javascript引擎会自动将原始类型的值转为包装对象实例，并在使用后立刻销毁实例**。例如字符串s = 'hello world';s.x = 123;可以拆分为如下步骤：
+```javascript
+var sObj = new Srting(s);
+sObj.x = 123;
+sObj = null;
+sObj.x; // undefined
+```
+上面代码为字符串s添加了一个x属性，结果总是返回undefined。其实，调用结束后，包装对象实例会自动销毁，这意味着，下一次调用字符串的属性时，实际上是调用一个新生成的对象，而不是上一次调用时生成的那个对象，所以取不到赋值在上一个对象的属性。
+
 ## 二、原型和原型链
 ### 2.1 原型
 #### 2.1.1 什么是原型？
@@ -126,8 +137,17 @@ function Person(name, age) {
 const p = new Person('aaa', 11);
 p.eat(); // 'aaa在吃饭'
 ```
-#### 2.2.3 原型链示意图
-![](/assets/img/favicons/__proto__.png)
+
+#### 2.2.3 instanceof
+- 定义：instanceof运算符用于检测构造函数的prototype属性是否会出现在某个实例对象的原型链上
+- 语法：object instanceof constructor
+```javascript
+son instanceof Father // true
+son instanceof Son // true
+```
+
+#### 2.2.4 原型链示意图
+![](/assets/img/favicons/proto.png)
 
 ## 三、继承
 ### 3.1 继承父构造函数的属性和方法
