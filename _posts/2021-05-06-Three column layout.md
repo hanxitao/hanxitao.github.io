@@ -78,3 +78,59 @@ tags: [css]
 当使用流体特性的块状元素与浮动元素做兄弟时，是覆盖的效果，即浮动元素会覆盖流体特性的元素，如下图。为了避免这种情况，就需要知道浮动元素的大小，与中间部分自适应相违和。
 
 ![](/assets/img/favicons/layout1.png)
+
+### 1.2 BFC
+#### 1.2.1 什么是BFC?
+取W3C对[BFC](http://www.ayqy.net/doc/css2-1/visuren.html#block-formatting)的定义：
+> 浮动，绝对定位的元素，非块盒的块容器（例如inline-blocks, table-cells和table-captions），以及'overflow'不为'visible'的块盒会为其内容建立新的块格式化上下文。
+
+#### 1.2.2 BFC渲染规则？
+1. 在一个块格式化上下文中，盒在垂直方向一个接一个地放置，从包含块的顶部开始。
+2. 两个兄弟盒之间的垂直距离由'margin'属性决定。
+3. 同一个块格式化上下文中的相邻块级盒之间的垂直外边距会合并。
+4. 在一个块格式化上下文中，每个盒的左外边界挨着包含块的左外边界，即使浮动元素也成立
+5. BFC的区域不会与浮动元素重叠
+6. 计算BFC的高度时，浮动元素也参与计算
+
+#### 1.2.3 BFC规则详解
+1. **同一个块格式化上下文中的相邻块级盒之间的垂直外边距会合并**
+
+    这里是讲margin collapse，其实是有如下情况会发生合并：1.父子外边距；2.兄弟外边距；不过需要符合以下几点：
+    1. **需要属于普通流中的盒子**：也就是不脱离文档流的
+    2. **毗邻**：元素间没有被padding、border、clear和line box分隔开
+    3. **垂直**：margin-top和margin-bottom
+
+    代码如下：
+
+    ```html
+    <!DOCTYPE html>
+    <html lang="en">
+    <head>
+      <style>
+        .parent {
+          width: 200px;
+          height: 200px;
+          background: orchid;
+        }
+        .child {
+          width: 100px;
+          height: 100px;
+          margin-top: 30px;
+          background: palegoldenrod;
+        }
+      </style>
+    </head>
+    <body>
+      <div class="parent">
+        <div class="child"></div>
+      </div>
+    </body>
+    </html>
+    ```
+
+    效果如下：
+    ![](/assets/img/favicons/bfc1.png)
+
+    该种现象即为margin塌陷：父子嵌套元素在垂直方向上的margin，父元素的margin-top和子元素的margin-top重合取最大值，并且作用在父元素上。
+    
+    解决：给父元素添加overflow:hidden;即可解决
