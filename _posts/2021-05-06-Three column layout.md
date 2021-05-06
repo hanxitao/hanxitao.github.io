@@ -134,3 +134,54 @@ tags: [css]
     该种现象即为margin塌陷：父子嵌套元素在垂直方向上的margin，父元素的margin-top和子元素的margin-top重合取最大值，并且作用在父元素上。
     
     解决：给父元素添加overflow:hidden;即可解决
+
+2. **BFC的区域不会与浮动元素重叠**
+
+    在该种方式实现三栏布局时，在左右浮动的两个元素后面跟了一个具有流体特性的div元素，此时浮动元素会覆盖在这个具有流体特性的div元素上。在给该元素加上overflow:hidden;后，会自动退避浮动元素宽度的距离。
+
+
+## 二、float实现三栏布局（全部float:left）
+代码如下：
+```html
+<html lang="en">
+<head>
+  <style>
+    .wrap2 {
+      overflow: hidden;
+      margin-top: 30px;
+      padding-left: 200px;
+      padding-right: 250px;
+      border: 1px solid red;
+    }
+    .wrap2 div {
+      position: relative;
+      float: left;
+      height: 30px;
+    }
+    .left2 {
+      width: 200px;
+      left: -200px;
+      margin-left: -100%;
+      background: orange;
+    }
+    .right2 {
+      width: 250px;
+      left: 250px;
+      margin-left: -250px;
+      background: orangered;
+    }
+    .center2 {
+      width: 100%;
+      background: orchid;
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap2">
+    <div class="center2">center2</div>
+    <div class="left2">left2</div>
+    <div class="right2">right2</div>
+  </div>
+</body>
+</html>
+```
