@@ -185,3 +185,46 @@ tags: [css]
 </body>
 </html>
 ```
+没有设置负margin和left值之前：
+![](/assets/img/favicons/layout-float1.png)
+
+左边的盒子设置margin-left:-100%;可以将其拉至中间盒子最左边：
+![](/assets/img/favicons/layout-float2.png)
+
+右边的盒子设置margin-left:-250px;是其相对中间盒子向左移动自身的宽度：
+![](/assets/img/favicons/layout-float3.png)
+
+最后左右盒子相对自己分别移动自身的宽度即可实现三栏布局：
+![](/assets/img/favicons/layout-float4.png)
+
+## 三、使用flex实现三栏布局
+代码如下：
+```html
+<html lang="en">
+<head>
+  <style>
+    .wrap1 {
+      display: flex;
+      border: 1px solid black;
+    }
+    .left1, .right1 {
+      width: 200px;
+      height: 40px;
+      background: lemonchiffon;
+    }
+    .center1 {
+      flex: 1;
+      height: 45px;
+      background: lightcoral;
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap1">
+    <div class="left1">left</div>
+    <div class="center1">center</div>
+    <div class="right1">right</div>
+  </div>
+</body>
+</html>
+```
