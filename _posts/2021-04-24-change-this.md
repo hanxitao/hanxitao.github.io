@@ -6,6 +6,23 @@ categories: [javascript]
 tags: [手写]
 ---
 
+## call、apply和bind的作用
+
+   call、apply和bind共同的作用是：改变this指向
+
+```javascript
+const obj = {
+  z: 1
+};
+function fn(x, y) {
+  return x + y + this.z;
+}
+fn.call(obj, 2, 3); // 6
+fn.apply(obj, [2, 3]); // 6
+var bound = fn.bind(obj, 2);
+bound(3); // 6
+```
+
 ## 手动实现call
 ```javascript
 Function.prototype.call_ = function (obj) {
@@ -39,37 +56,57 @@ Function.prototype.apply_ = function (obj, arr) {
   - 特点：
     1. 不会执行函数，而是返回一个绑定了this的新函数bound
     2. 无法通过call/apply修改新函数bound的this
-    3. 新函数bound可以使用new运算符构造，在构造过程中，已经确定的this会被忽略，返回的实例会继承构造函数的属性与原型属性，并且能正常接收参数
+    3. 绑定函数bound也能使用new操作符创建对象：这种行为就像把原函数当成构造器，提供的this被忽略。
+
+例子如下：
+
 ```javascript
-const obj = {
-  z: 1
-};
-function fn(x, y) {
-  return x + y + this.z;
-}
-fn.call(obj, 2, 3); // 6
-fn.apply(obj, [2, 3]); // 6
-var bound = fn.bind(obj, 2);
-bound(3); // 6
+  var value = 2;
+
+  var foo = {
+    value: 1
+  }
+
+  function bar(name, age) {
+    this.habbit = 'shopping';
+    console.log(this.value);
+    console.log(name);
+    console.log(age);
+  }
+  bar.prototype.friend = 'kevin';
+
+  var bindFoo = bar.bind(foo, 'daisy');
+  var obj = new bindFoo(18);
+  // undefined
+  // daisy
+  // 18
+  console.log(obj.habbit);//shopping
+  console.log(obj.friend);//kevin
 ```
 
 实现：
 
 ```javascript
-Function.prototype.bind_ = function (obj) {
+Function.prototype.bindWithSelf = function (context) {
   if (typeof this !== "function") {
     throw new Error("Function.prototype.bind - what is trying to be dound is not callable");
   }
-  const args = [...arguments].slice(1);
-  const fn = this;
-  function bound() {
-    const params = [...arguments].slice(0);
-    return fn.apply(this.constructor === fn ? this : obj, args.concat(params));
+
+  const self = this,
+    args = Array.prototype.slice.call(arguments, 1),
+    f = function () {};
+
+  const boundFunc = function () {
+    const boundArgs = Array.prototype.slice.call(arguments);
+    self.apply(this instanceof self ? this : context, args.concat(boundArgs));
   }
 
-  function fn_ () {}
-  fn_.prototype = fn.prototype;
-  bound.prototype = new fn_();
-  return bound;
+  f.prototype = this.prototype;
+  boundFunc.prototype = new f();
+
+  return boundFunc;
 }
 ```
+
+## 参考文章
+来自juejin.com的[JavaScript深入之bind的模拟实现](https://juejin.cn/post/6844903476623835149#comment)
