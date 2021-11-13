@@ -1,9 +1,9 @@
 ---
-title: Change this
+title: 手写call、apply和bind
 author: hanxitao
 date: 2021-04-24 22:21:00 +0800
 categories: [javascript]
-tags: [this]
+tags: [手写]
 ---
 
 ## 手动实现call

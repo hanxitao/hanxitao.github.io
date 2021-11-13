@@ -1,9 +1,9 @@
 ---
-title: debounce and throttle
+title: 防抖节流
 author: hanxitao
 date: 2021-04-25 15:30:00 +0800
 categories: [javascript]
-tags: [debounce]
+tags: [js相关]
 ---
 
 ## 防抖

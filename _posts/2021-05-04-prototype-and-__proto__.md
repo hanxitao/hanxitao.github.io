@@ -1,9 +1,9 @@
 ---
-title: prototype and __proto__
+title: 原型
 author: hanxitao
 date: 2021-05-04 17:09:00 +0800
 categories: [javascript]
-tags: [prototype]
+tags: [js相关]
 ---
 
 ## 一、构造函数

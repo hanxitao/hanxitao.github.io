@@ -1,9 +1,9 @@
 ---
-title: Regular Expression
+title: 正则表达式
 author: hanxitao
 date: 2021-04-23 04:30:00 +0800
 categories: [javascript]
-tags: [regular expression]
+tags: [js相关]
 ---
 
 ## 什么是正则表达式
