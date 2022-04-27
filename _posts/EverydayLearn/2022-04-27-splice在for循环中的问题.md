@@ -8,7 +8,7 @@ tags: [每日一题]
 
 ### for循环中使用splice的问题
 
-由于splice会改变原数组，如果在for循环中使用splice就会导致下标有问题。
+由于splice会改变原数组，如果在for循环中使用splice就会导致不能够遍历所有元素。
 
 ```javascript
 const arr = ['a', 'a', 'a', 'b', 'c', 'd', 'a', 'a'];
@@ -21,7 +21,7 @@ for (let i = 0; i < arr.length; i ++) {
 console.log(arr); // ['a', 'b', 'c', 'd', 'a']
 ```
 
-### 方法一：改变索引
+### 方法一：改变循环变量
 
 ```javascript
 const arr = ['a', 'a', 'a', 'b', 'c', 'd', 'a', 'a'];
