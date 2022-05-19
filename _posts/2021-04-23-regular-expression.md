@@ -67,7 +67,7 @@ var reg1 = new RegExp('\d'); // /d/
   var reg = /(a+)(b+)/;
   var reg1 = /(a+)(?:b+)/;
   reg.exec(str); //["aaabbb", "aaa", "bbb"]
-  reg1.exec(st1); //["aaabbb", "aaa"]
+  reg1.exec(str); //["aaabbb", "aaa"]
   ```
 
 ## 正则的特性
