@@ -1,5 +1,5 @@
 ---
-title: Three column layout
+title: 三栏布局
 author: hanxitao
 date: 2021-05-06 16:06:00 +0800
 categories: [css]
@@ -128,8 +128,9 @@ tags: [css]
     </html>
     ```
 
-    效果如下：
-    ![](/assets/img/favicons/bfc1.png)
+  效果如下：
+
+  ![](/assets/img/favicons/bfc1.png){:height="65%" width="65%"}
 
     该种现象即为margin塌陷：父子嵌套元素在垂直方向上的margin，父元素的margin-top和子元素的margin-top重合取最大值，并且作用在父元素上。
     
@@ -140,62 +141,56 @@ tags: [css]
     在该种方式实现三栏布局时，在左右浮动的两个元素后面跟了一个具有流体特性的div元素，此时浮动元素会覆盖在这个具有流体特性的div元素上。在给该元素加上overflow:hidden;后，会自动退避浮动元素宽度的距离。
 
 
-## 二、float实现三栏布局（全部float:left）
+## 二、position实现三栏布局
 代码如下：
 ```html
 <html lang="en">
 <head>
   <style>
-    .wrap2 {
-      overflow: hidden;
-      margin-top: 30px;
-      padding-left: 200px;
-      padding-right: 250px;
-      border: 1px solid red;
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
     }
-    .wrap2 div {
+    .wrap {
+      height: 200px;
       position: relative;
-      float: left;
-      height: 30px;
+      border: 1px solid black;
     }
-    .left2 {
-      width: 200px;
-      left: -200px;
-      margin-left: -100%;
-      background: orange;
+    .box {
+      height: 100%;
+      position: absolute;
     }
-    .right2 {
-      width: 250px;
-      left: 250px;
-      margin-left: -250px;
-      background: orangered;
+    .left {
+      left: 0;
+      width: 100px;
+      background: greenyellow;
     }
-    .center2 {
-      width: 100%;
-      background: orchid;
+    .right {
+      right: 0;
+      width: 100px;
+      background: yellowgreen;
+    }
+    .center {
+      left: 100px;
+      right: 100px;
+      background: skyblue;
     }
   </style>
 </head>
 <body>
-  <div class="wrap2">
-    <div class="center2">center2</div>
-    <div class="left2">left2</div>
-    <div class="right2">right2</div>
+  <div class="wrap">
+    <div class="box left"></div>
+    <div class="box center"></div>
+    <div class="box right"></div>
   </div>
 </body>
 </html>
 ```
-没有设置负margin和left值之前：
-![](/assets/img/favicons/layout-float1.png)
 
-左边的盒子设置margin-left:-100%;可以将其拉至中间盒子最左边：
-![](/assets/img/favicons/layout-float2.png)
+效果如下：
 
-右边的盒子设置margin-left:-250px;是其相对中间盒子向左移动自身的宽度：
-![](/assets/img/favicons/layout-float3.png)
-
-最后左右盒子相对自己分别移动自身的宽度即可实现三栏布局：
-![](/assets/img/favicons/layout-float4.png)
+![](/assets/img/css/three-layout/three_layout_position.png){:height="65%" width="65%"}
 
 ## 三、使用flex实现三栏布局
 代码如下：
