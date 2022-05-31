@@ -2,8 +2,8 @@
 title: splice在for循环中的问题
 author: hanxitao
 date: 2022-04-27 11:15:00 +0800
-categories: [每日一题]
-tags: [每日一题]
+categories: [javascript, EverydayLearn]
+tags: [javascript, EverydayLearn]
 ---
 
 ### for循环中使用splice的问题
