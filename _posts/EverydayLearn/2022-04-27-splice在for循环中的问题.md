@@ -2,7 +2,7 @@
 title: splice在for循环中的问题
 author: hanxitao
 date: 2022-04-27 11:15:00 +0800
-categories: [javascript, EverydayLearn]
+categories: [javascript, EverydayLearnOfJs]
 tags: [javascript, EverydayLearn]
 ---
 
