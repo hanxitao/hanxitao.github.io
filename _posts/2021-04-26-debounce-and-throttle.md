@@ -24,33 +24,28 @@ function debounce(func, delay) {
 ## 节流
 &#8195;**所谓节流，就是指连续触发事件在n秒中只执行一次函数**
 
-定时器版：开始时不执行，最后时间间隔内再执行一次
 ```javascript
-function throttle(func, delay) {
-    let timer;
+function throttle(func, delay = 500) {
+    let timer = null,
+        firstTime = true;
 
-    return function () {
-        if (!timer) {
-            timer = setTimeout(() => {
-                timer = null;
-                func(...arguments);
-            }, delay);
+    return function (...args) {
+        if (firstTime) {
+            // 第一次执行
+            func.apply(this, args);
+            return firstTime = false;
         }
-    }
-}
-```
 
-时间戳版：开始时立即执行一次，最后时间间隔内不再执行
-```javascript
-function throttle1(func, delay) {
-    let initTime = 0;
-
-    return function () {
-        let now = Date.now();
-        if (now - initTime > delay) {
-            func(...arguments);
-            initTime = now;
+        if (timer) {
+            // 定时器正在执行中，跳过
+            return;
         }
+
+        timer = setTimeout(() => {
+            clearTimeout(timer);
+            timer = null;
+            func.apply(this, args);
+        }, delay);
     }
 }
 ```
