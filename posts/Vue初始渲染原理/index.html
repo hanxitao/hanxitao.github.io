@@ -1,0 +1,363 @@
+<!DOCTYPE html><html lang="en-US" ><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no"><meta name="pv-cache-enabled" content="false"><meta name="generator" content="Jekyll v4.3.2" /><meta property="og:title" content="手写Vue2.0源码（三）-初始渲染原理" /><meta name="author" content="hanxitao" /><meta property="og:locale" content="en_US" /><meta name="description" content="1.组件挂载入口" /><meta property="og:description" content="1.组件挂载入口" /><link rel="canonical" href="https://hanxitao.github.io/posts/Vue%E5%88%9D%E5%A7%8B%E6%B8%B2%E6%9F%93%E5%8E%9F%E7%90%86/" /><meta property="og:url" content="https://hanxitao.github.io/posts/Vue%E5%88%9D%E5%A7%8B%E6%B8%B2%E6%9F%93%E5%8E%9F%E7%90%86/" /><meta property="og:site_name" content="Layman" /><meta property="og:type" content="article" /><meta property="article:published_time" content="2021-11-25T14:29:00+08:00" /><meta name="twitter:card" content="summary" /><meta property="twitter:title" content="手写Vue2.0源码（三）-初始渲染原理" /><meta name="twitter:site" content="@twitter_username" /><meta name="twitter:creator" content="@hanxitao" /><meta name="google-site-verification" content="google_meta_tag_verification" /> <script type="application/ld+json"> {"@context":"https://schema.org","@type":"BlogPosting","author":{"@type":"Person","name":"hanxitao"},"dateModified":"2022-06-04T00:12:12+08:00","datePublished":"2021-11-25T14:29:00+08:00","description":"1.组件挂载入口","headline":"手写Vue2.0源码（三）-初始渲染原理","mainEntityOfPage":{"@type":"WebPage","@id":"https://hanxitao.github.io/posts/Vue%E5%88%9D%E5%A7%8B%E6%B8%B2%E6%9F%93%E5%8E%9F%E7%90%86/"},"url":"https://hanxitao.github.io/posts/Vue%E5%88%9D%E5%A7%8B%E6%B8%B2%E6%9F%93%E5%8E%9F%E7%90%86/"}</script><title>手写Vue2.0源码（三）-初始渲染原理 | Layman</title><link rel="shortcut icon" href="/assets/img/favicons/favicon.ico" type="image/x-icon"><link rel="icon" href="/assets/img/favicons/favicon.ico" type="image/x-icon"><link rel="apple-touch-icon" href="/assets/img/favicons/apple-icon.png"><link rel="apple-touch-icon" href="/assets/img/favicons/apple-icon-precomposed.png"><link rel="apple-touch-icon" sizes="57x57" href="/assets/img/favicons/apple-icon-57x57.png"><link rel="apple-touch-icon" sizes="60x60" href="/assets/img/favicons/apple-icon-60x60.png"><link rel="apple-touch-icon" sizes="72x72" href="/assets/img/favicons/apple-icon-72x72.png"><link rel="apple-touch-icon" sizes="76x76" href="/assets/img/favicons/apple-icon-76x76.png"><link rel="apple-touch-icon" sizes="114x114" href="/assets/img/favicons/apple-icon-114x114.png"><link rel="apple-touch-icon" sizes="120x120" href="/assets/img/favicons/apple-icon-120x120.png"><link rel="apple-touch-icon" sizes="144x144" href="/assets/img/favicons/apple-icon-144x144.png"><link rel="apple-touch-icon" sizes="152x152" href="/assets/img/favicons/apple-icon-152x152.png"><link rel="apple-touch-icon" sizes="180x180" href="/assets/img/favicons/apple-icon-180x180.png"><link rel="icon" type="image/png" sizes="192x192" href="/assets/img/favicons/android-icon-192x192.png"><link rel="icon" type="image/png" sizes="32x32" href="/assets/img/favicons/favicon-32x32.png"><link rel="icon" type="image/png" sizes="96x96" href="/assets/img/favicons/favicon-96x96.png"><link rel="icon" type="image/png" sizes="16x16" href="/assets/img/favicons/favicon-16x16.png"><link rel="manifest" href="/assets/img/favicons/manifest.json"><meta name='msapplication-config' content='/assets/img/favicons/browserconfig.xml'><meta name="msapplication-TileColor" content="#ffffff"><meta name="msapplication-TileImage" content="/assets/img/favicons/ms-icon-144x144.png"><meta name="theme-color" content="#ffffff"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="anonymous"><link rel="dns-prefetch" href="https://fonts.gstatic.com"><link rel="preconnect" href="https://www.google-analytics.com" crossorigin="use-credentials"><link rel="dns-prefetch" href="https://www.google-analytics.com"><link rel="preconnect" href="https://www.googletagmanager.com" crossorigin="anonymous"><link rel="dns-prefetch" href="https://www.googletagmanager.com"><link rel="preconnect" href="cdn.jsdelivr.net"><link rel="dns-prefetch" href="cdn.jsdelivr.net"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.0.0/dist/css/bootstrap.min.css" integrity="sha256-LA89z+k9fjgMKQ/kq4OO2Mrf8VltYml/VES+Rg0fh20=" crossorigin="anonymous"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@5.11.2/css/all.min.css" integrity="sha256-+N4/V/SbAFiW1MPBCXnfnP9QSN3+Keu+NlB+0ev/YKQ=" crossorigin="anonymous"><link rel="stylesheet" href="/assets/css/style.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/afeld/bootstrap-toc@1.0.1/dist/bootstrap-toc.min.css"> <script src="https://cdn.jsdelivr.net/npm/jquery@3/dist/jquery.min.js"></script> <script defer src="https://cdn.jsdelivr.net/combine/npm/popper.js@1.15.0,npm/bootstrap@4/dist/js/bootstrap.min.js"></script> <script defer src="/assets/js/dist/post.min.js"></script> <script defer src="/app.js"></script> <script defer src="https://www.googletagmanager.com/gtag/js?id="></script> <script> document.addEventListener("DOMContentLoaded", function(event) { window.dataLayer = window.dataLayer || []; function gtag(){dataLayer.push(arguments);} gtag('js', new Date()); gtag('config', ''); }); </script><body data-spy="scroll" data-target="#toc"><div id="sidebar" class="d-flex flex-column align-items-end"><div class="profile-wrapper text-center"><div id="avatar"> <a href="/" alt="avatar" class="mx-auto"> <img src="https://cdn.jsdelivr.net/gh/cotes2020/chirpy-images/commons/avatar.jpg" alt="avatar" onerror="this.style.display='none'"> </a></div><div class="site-title mt-3"> <a href="/">Layman</a></div><div class="site-subtitle font-italic">Death is just another path, one that we all must take.</div></div><ul class="w-100"><li class="nav-item"> <a href="/" class="nav-link"> <i class="fa-fw fas fa-home ml-xl-3 mr-xl-3 unloaded"></i> <span>HOME</span> </a><li class="nav-item"> <a href="/categories/" class="nav-link"> <i class="fa-fw fas fa-stream ml-xl-3 mr-xl-3 unloaded"></i> <span>CATEGORIES</span> </a><li class="nav-item"> <a href="/tags/" class="nav-link"> <i class="fa-fw fas fa-tags ml-xl-3 mr-xl-3 unloaded"></i> <span>TAGS</span> </a><li class="nav-item"> <a href="/archives/" class="nav-link"> <i class="fa-fw fas fa-archive ml-xl-3 mr-xl-3 unloaded"></i> <span>ARCHIVES</span> </a><li class="nav-item"> <a href="/about/" class="nav-link"> <i class="fa-fw fas fa-info ml-xl-3 mr-xl-3 unloaded"></i> <span>ABOUT</span> </a></ul><div class="sidebar-bottom mt-auto d-flex flex-wrap justify-content-center"> <a href="https://github.com/hanxitao" aria-label="github" class="order-3" target="_blank" rel="noopener"> <i class="fab fa-github-alt"></i> </a> <a href="https://twitter.com/twitter_username" aria-label="twitter" class="order-4" target="_blank" rel="noopener"> <i class="fab fa-twitter"></i> </a> <a href=" javascript:location.href = 'mailto:' + ['example','doamin.com'].join('@')" aria-label="email" class="order-5" > <i class="fas fa-envelope"></i> </a> <a href="/feed.xml" aria-label="rss" class="order-6" > <i class="fas fa-rss"></i> </a> <span class="icon-border order-2"></span> <span id="mode-toggle-wrapper" class="order-1"> <i class="mode-toggle fas fa-adjust"></i> <script type="text/javascript"> class ModeToggle { static get MODE_KEY() { return "mode"; } static get DARK_MODE() { return "dark"; } static get LIGHT_MODE() { return "light"; } constructor() { if (this.hasMode) { if (this.isDarkMode) { if (!this.isSysDarkPrefer) { this.setDark(); } } else { if (this.isSysDarkPrefer) { this.setLight(); } } } var self = this; /* always follow the system prefers */ this.sysDarkPrefers.addListener(function() { if (self.hasMode) { if (self.isDarkMode) { if (!self.isSysDarkPrefer) { self.setDark(); } } else { if (self.isSysDarkPrefer) { self.setLight(); } } self.clearMode(); } self.updateMermaid(); }); } /* constructor() */ setDark() { $('html').attr(ModeToggle.MODE_KEY, ModeToggle.DARK_MODE); sessionStorage.setItem(ModeToggle.MODE_KEY, ModeToggle.DARK_MODE); } setLight() { $('html').attr(ModeToggle.MODE_KEY, ModeToggle.LIGHT_MODE); sessionStorage.setItem(ModeToggle.MODE_KEY, ModeToggle.LIGHT_MODE); } clearMode() { $('html').removeAttr(ModeToggle.MODE_KEY); sessionStorage.removeItem(ModeToggle.MODE_KEY); } get sysDarkPrefers() { return window.matchMedia("(prefers-color-scheme: dark)"); } get isSysDarkPrefer() { return this.sysDarkPrefers.matches; } get isDarkMode() { return this.mode == ModeToggle.DARK_MODE; } get isLightMode() { return this.mode == ModeToggle.LIGHT_MODE; } get hasMode() { return this.mode != null; } get mode() { return sessionStorage.getItem(ModeToggle.MODE_KEY); } /* get the current mode on screen */ get modeStatus() { if (this.isDarkMode || (!this.hasMode && this.isSysDarkPrefer) ) { return ModeToggle.DARK_MODE; } else { return ModeToggle.LIGHT_MODE; } } updateMermaid() { if (typeof mermaid !== "undefined") { let expectedTheme = (this.modeStatus === ModeToggle.DARK_MODE? "dark" : "default"); let config = { theme: expectedTheme }; /* re-render the SVG › <https://github.com/mermaid-js/mermaid/issues/311#issuecomment-332557344> */ $(".mermaid").each(function() { let svgCode = $(this).prev().children().html(); $(this).removeAttr("data-processed"); $(this).html(svgCode); }); mermaid.initialize(config); mermaid.init(undefined, ".mermaid"); } } flipMode() { if (this.hasMode) { if (this.isSysDarkPrefer) { if (this.isLightMode) { this.clearMode(); } else { this.setLight(); } } else { if (this.isDarkMode) { this.clearMode(); } else { this.setDark(); } } } else { if (this.isSysDarkPrefer) { this.setLight(); } else { this.setDark(); } } this.updateMermaid(); } /* flipMode() */ } /* ModeToggle */ let toggle = new ModeToggle(); $(".mode-toggle").click(function() { toggle.flipMode(); }); </script> </span></div></div><div id="topbar-wrapper" class="row justify-content-center topbar-down"><div id="topbar" class="col-11 d-flex h-100 align-items-center justify-content-between"> <span id="breadcrumb"> <span> <a href="/"> Posts </a> </span> <span>手写Vue2.0源码（三）-初始渲染原理</span> </span> <i id="sidebar-trigger" class="fas fa-bars fa-fw"></i><div id="topbar-title"> Post</div><i id="search-trigger" class="fas fa-search fa-fw"></i> <span id="search-wrapper" class="align-items-center"> <i class="fas fa-search fa-fw"></i> <input class="form-control" id="search-input" type="search" aria-label="search" placeholder="Search..."> <i class="fa fa-times-circle fa-fw" id="search-cleaner"></i> </span> <span id="search-cancel" >Cancel</span></div></div><div id="main-wrapper"><div id="main"><div class="row"><div id="post-wrapper" class="col-12 col-lg-11 col-xl-8"><div class="post pl-1 pr-1 pl-sm-2 pr-sm-2 pl-md-4 pr-md-4"><h1 data-toc-skip>手写Vue2.0源码（三）-初始渲染原理</h1><div class="post-meta text-muted d-flex flex-column"><div> <span class="semi-bold"> hanxitao </span> <span class="timeago " data-toggle="tooltip" data-placement="bottom" title="Thu, Nov 25, 2021, 2:29 PM +0800" prep="on" > Nov 25, 2021 <i class="unloaded">2021-11-25T14:29:00+08:00</i> </span></div><div> <span> <span class="timeago lastmod" data-toggle="tooltip" data-placement="bottom" title="Sat, Jun 4, 2022, 12:12 AM +0800" prefix="Updated " > Jun 4, 2022 <i class="unloaded">2022-06-04T00:12:12+08:00</i> </span> </span> <span class="readtime" data-toggle="tooltip" data-placement="bottom" title="1436 words">7 min</span></div></div><div class="post-content"><h2 id="1组件挂载入口">1.组件挂载入口</h2><div class="language-javascript highlighter-rouge"><div class="highlight"><code><table class="rouge-table"><tbody><tr><td class="rouge-gutter gl"><pre class="lineno">1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+21
+22
+23
+</pre><td class="rouge-code"><pre><span class="c1">// src/init.js</span>
+<span class="k">import</span> <span class="p">{</span> <span class="nx">mountComponent</span> <span class="p">}</span> <span class="k">from</span> <span class="dl">'</span><span class="s1">./lifecycle</span><span class="dl">'</span><span class="p">;</span>
+
+<span class="nx">Vue</span><span class="p">.</span><span class="nx">prototype</span><span class="p">.</span><span class="nx">$mount</span> <span class="o">=</span> <span class="nf">function </span><span class="p">(</span><span class="nx">el</span><span class="p">)</span> <span class="p">{</span>
+    <span class="kd">const</span> <span class="nx">vm</span> <span class="o">=</span> <span class="k">this</span><span class="p">;</span>
+    <span class="kd">const</span> <span class="nx">options</span> <span class="o">=</span> <span class="nx">vm</span><span class="p">.</span><span class="nx">$options</span><span class="p">;</span>
+
+    <span class="nx">el</span> <span class="o">=</span> <span class="nb">document</span><span class="p">.</span><span class="nf">querySelector</span><span class="p">(</span><span class="nx">el</span><span class="p">);</span>
+    <span class="k">if </span><span class="p">(</span><span class="o">!</span><span class="nx">options</span><span class="p">.</span><span class="nx">render</span><span class="p">)</span> <span class="p">{</span>
+        <span class="kd">let</span> <span class="nx">template</span> <span class="o">=</span> <span class="nx">options</span><span class="p">.</span><span class="nx">template</span><span class="p">;</span>
+
+        <span class="k">if </span><span class="p">(</span><span class="o">!</span><span class="nx">template</span> <span class="o">&amp;&amp;</span> <span class="nx">el</span><span class="p">)</span> <span class="p">{</span>
+            <span class="nx">template</span> <span class="o">=</span> <span class="nx">el</span><span class="p">.</span><span class="nx">outerHTML</span><span class="p">;</span>
+        <span class="p">}</span>
+
+        <span class="k">if </span><span class="p">(</span><span class="nx">template</span><span class="p">)</span> <span class="p">{</span>
+            <span class="kd">const</span> <span class="nx">render</span> <span class="o">=</span> <span class="nf">compileToFunctions</span><span class="p">(</span><span class="nx">template</span><span class="p">);</span>
+            <span class="nx">options</span><span class="p">.</span><span class="nx">render</span> <span class="o">=</span> <span class="nx">render</span><span class="p">;</span>
+        <span class="p">}</span>
+    <span class="p">}</span>
+
+    <span class="k">return</span> <span class="nf">mountComponent</span><span class="p">(</span><span class="nx">vm</span><span class="p">,</span> <span class="nx">el</span><span class="p">);</span>
+<span class="p">}</span>
+</pre></table></code></div></div><p>mountComponent就是组件实例挂载的入口函数，这个方法放在源码的lifecycle文件里面，代表了与生命周期相关，因为组件初始化渲染前后对应有beforeMount和mounted生命周期钩子</p><h2 id="2组件挂载核心方法mountcomponent">2.组件挂载核心方法mountComponent</h2><div class="language-javascript highlighter-rouge"><div class="highlight"><code><table class="rouge-table"><tbody><tr><td class="rouge-gutter gl"><pre class="lineno">1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+</pre><td class="rouge-code"><pre><span class="c1">// src/lifecycle.js</span>
+
+<span class="k">export</span> <span class="kd">function</span> <span class="nf">mountComponent</span><span class="p">(</span><span class="nx">vm</span><span class="p">,</span> <span class="nx">el</span><span class="p">)</span> <span class="p">{</span>
+    <span class="c1">// 上一步模板编译生成了render函数</span>
+    <span class="c1">// 下一步就是执行vm._render()方法，调用生成的render函数，生成虚拟DOM</span>
+    <span class="c1">// 最后使用vm._update()方法把虚拟DOM渲染到页面</span>
+
+    <span class="c1">// 真实的el选项赋值给实例的$el属性，为之后虚拟DOM产生的新的DOM替换老的DOM做铺垫</span>
+    <span class="nx">vm</span><span class="p">.</span><span class="nx">$el</span> <span class="o">=</span> <span class="nx">el</span><span class="p">;</span>
+    <span class="c1">// _update和_render方法都是挂载在Vue原型的方法</span>
+    <span class="nx">vm</span><span class="p">.</span><span class="nf">_update</span><span class="p">(</span><span class="nx">vm</span><span class="p">.</span><span class="nf">_render</span><span class="p">());</span>
+<span class="p">}</span>
+</pre></table></code></div></div><p>新建lifecycle.js文件，表示生命周期相关功能，核心导出mountComponent函数，主要使用vm._update(vm._render())方法进行实例挂载。</p><h2 id="3render函数转化成虚拟dom核心方法_render">3.render函数转化成虚拟DOM核心方法_render</h2><div class="language-javascript highlighter-rouge"><div class="highlight"><code><table class="rouge-table"><tbody><tr><td class="rouge-gutter gl"><pre class="lineno">1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+21
+22
+23
+24
+25
+26
+27
+28
+29
+30
+31
+32
+33
+</pre><td class="rouge-code"><pre><span class="c1">// src/render.js</span>
+<span class="k">import</span> <span class="p">{</span> <span class="nx">createElement</span><span class="p">,</span> <span class="nx">createTextNode</span> <span class="p">}</span> <span class="k">from</span> <span class="dl">'</span><span class="s1">./vdom/index</span><span class="dl">'</span><span class="p">;</span>
+
+<span class="k">export</span> <span class="kd">function</span> <span class="nf">renderMixin</span><span class="p">(</span><span class="nx">Vue</span><span class="p">)</span> <span class="p">{</span>
+    <span class="nx">Vue</span><span class="p">.</span><span class="nx">prototype</span><span class="p">.</span><span class="nx">_render</span> <span class="o">=</span> <span class="kd">function</span><span class="p">()</span> <span class="p">{</span>
+        <span class="kd">const</span> <span class="nx">vm</span> <span class="o">=</span> <span class="k">this</span><span class="p">;</span>
+        <span class="c1">// 获取模板编译生成的render方法</span>
+        <span class="kd">const</span> <span class="p">{</span> <span class="nx">render</span> <span class="p">}</span> <span class="o">=</span> <span class="nx">vm</span><span class="p">.</span><span class="nx">$options</span><span class="p">;</span>
+        <span class="c1">// 生成vnode---虚拟DOM</span>
+        <span class="kd">const</span> <span class="nx">vnode</span> <span class="o">=</span> <span class="nx">render</span><span class="p">.</span><span class="nf">call</span><span class="p">(</span><span class="nx">vm</span><span class="p">);</span>
+        <span class="k">return</span> <span class="nx">vnode</span><span class="p">;</span>
+    <span class="p">}</span>
+
+    <span class="c1">// render函数里面有_c、_v、_s方法需要定义</span>
+    <span class="nx">Vue</span><span class="p">.</span><span class="nx">prototype</span><span class="p">.</span><span class="nx">_c</span> <span class="o">=</span> <span class="kd">function</span><span class="p">(...</span><span class="nx">args</span><span class="p">)</span> <span class="p">{</span>
+        <span class="c1">// 创建虚拟DOM元素</span>
+        <span class="k">return</span> <span class="nf">createElement</span><span class="p">(...</span><span class="nx">args</span><span class="p">);</span>
+    <span class="p">}</span>
+
+    <span class="nx">Vue</span><span class="p">.</span><span class="nx">prototype</span><span class="p">.</span><span class="nx">_v</span> <span class="o">=</span> <span class="nf">function </span><span class="p">(</span><span class="nx">text</span><span class="p">)</span> <span class="p">{</span>
+        <span class="c1">// 创建虚拟DOM文本</span>
+        <span class="k">return</span> <span class="nf">createTextNode</span><span class="p">(</span><span class="nx">text</span><span class="p">);</span>
+    <span class="p">}</span>
+
+    <span class="nx">Vue</span><span class="p">.</span><span class="nx">prototype</span><span class="p">.</span><span class="nx">_s</span> <span class="o">=</span> <span class="nf">function </span><span class="p">(</span><span class="nx">val</span><span class="p">)</span> <span class="p">{</span>
+        <span class="c1">// 如果模板里面的是一个对象，需要JSON.stringify</span>
+        <span class="k">return</span> <span class="nx">val</span> <span class="o">==</span> <span class="kc">null</span>
+            <span class="p">?</span> <span class="dl">''</span>
+            <span class="p">:</span> <span class="k">typeof</span> <span class="nx">val</span> <span class="o">===</span> <span class="dl">'</span><span class="s1">object</span><span class="dl">'</span>
+            <span class="p">?</span> <span class="nx">JSON</span><span class="p">.</span><span class="nf">stringify</span><span class="p">(</span><span class="nx">val</span><span class="p">)</span>
+            <span class="p">:</span> <span class="nx">val</span><span class="p">;</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+</pre></table></code></div></div><p>主要在原型定义了_render方法，然后执行了render函数，我们知道模板编译出来的render函数核心代码主要return了类似于_c(‘div’,{id:”app”},_c(‘div’,undefined,_v(“hello”+_s(name)),_c(‘span’,undefined,_v(“world”))))这样的代码，所以我们需要定义一下_c、_v、_s这些函数，然后才能转化成虚拟DOM</p><div class="language-javascript highlighter-rouge"><div class="highlight"><code><table class="rouge-table"><tbody><tr><td class="rouge-gutter gl"><pre class="lineno">1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+21
+22
+23
+24
+</pre><td class="rouge-code"><pre><span class="c1">// src/vdom/index.js</span>
+
+<span class="c1">// 定义Vnode类</span>
+<span class="k">export</span> <span class="k">default</span> <span class="kd">class</span> <span class="nc">Vnode</span> <span class="p">{</span>
+    <span class="nf">constructor</span><span class="p">(</span><span class="nx">tag</span><span class="p">,</span> <span class="nx">data</span><span class="p">,</span> <span class="nx">key</span><span class="p">,</span> <span class="nx">children</span><span class="p">,</span> <span class="nx">text</span><span class="p">)</span> <span class="p">{</span>
+        <span class="k">this</span><span class="p">.</span><span class="nx">tag</span> <span class="o">=</span> <span class="nx">tag</span><span class="p">;</span>
+        <span class="k">this</span><span class="p">.</span><span class="nx">data</span> <span class="o">=</span> <span class="nx">data</span><span class="p">;</span>
+        <span class="k">this</span><span class="p">.</span><span class="nx">key</span> <span class="o">=</span> <span class="nx">key</span><span class="p">;</span>
+        <span class="k">this</span><span class="p">.</span><span class="nx">children</span> <span class="o">=</span> <span class="nx">children</span><span class="p">;</span>
+        <span class="k">this</span><span class="p">.</span><span class="nx">text</span> <span class="o">=</span> <span class="nx">text</span><span class="p">;</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+
+<span class="c1">// 创建元素vnode，等于render函数里面的h =&gt; h(App)</span>
+<span class="k">export</span> <span class="kd">function</span> <span class="nf">createElement</span><span class="p">(</span><span class="nx">tag</span><span class="p">,</span> <span class="nx">data</span> <span class="o">=</span> <span class="p">{},</span> <span class="p">...</span><span class="nx">children</span><span class="p">)</span> <span class="p">{</span>
+    <span class="kd">let</span> <span class="nx">key</span> <span class="o">=</span> <span class="nx">data</span><span class="p">.</span><span class="nx">key</span><span class="p">;</span>
+
+    <span class="k">return</span> <span class="k">new</span> <span class="nc">Vnode</span><span class="p">(</span><span class="nx">tag</span><span class="p">,</span> <span class="nx">data</span><span class="p">,</span> <span class="nx">key</span><span class="p">,</span> <span class="nx">children</span><span class="p">);</span>
+<span class="p">}</span>
+
+<span class="c1">// 创建文本vnode</span>
+<span class="k">export</span> <span class="kd">function</span> <span class="nf">createTextNode</span><span class="p">(</span><span class="nx">text</span><span class="p">)</span> <span class="p">{</span>
+    <span class="k">return</span> <span class="k">new</span> <span class="nc">Vnode</span><span class="p">(</span><span class="kc">undefined</span><span class="p">,</span> <span class="kc">undefined</span><span class="p">,</span> <span class="kc">undefined</span><span class="p">,</span> <span class="kc">undefined</span><span class="p">,</span> <span class="nx">text</span><span class="p">);</span>
+<span class="p">}</span>
+</pre></table></code></div></div><p>新建vdom文件夹，代表虚拟DOM相关功能，定义Vnode类以及createElement和createTextNode方法</p><h2 id="4虚拟dom转化成真实dom的核心方法_update">4.虚拟DOM转化成真实DOM的核心方法_update</h2><div class="language-javascript highlighter-rouge"><div class="highlight"><code><table class="rouge-table"><tbody><tr><td class="rouge-gutter gl"><pre class="lineno">1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+</pre><td class="rouge-code"><pre><span class="c1">// src/lifecycle.js</span>
+<span class="k">import</span> <span class="p">{</span> <span class="nx">patch</span> <span class="p">}</span> <span class="k">from</span> <span class="dl">'</span><span class="s1">./vdom/patch</span><span class="dl">'</span><span class="p">;</span>
+
+<span class="k">export</span> <span class="kd">function</span> <span class="nf">lifecycleMixin</span><span class="p">(</span><span class="nx">Vue</span><span class="p">)</span> <span class="p">{</span>
+    <span class="nx">Vue</span><span class="p">.</span><span class="nx">prototype</span><span class="p">.</span><span class="nx">_update</span> <span class="o">=</span> <span class="nf">function </span><span class="p">(</span><span class="nx">vnode</span><span class="p">)</span> <span class="p">{</span>
+        <span class="kd">const</span> <span class="nx">vm</span> <span class="o">=</span> <span class="k">this</span><span class="p">;</span>
+        <span class="c1">// patch是渲染vnode为真实DOM的核心</span>
+        <span class="nx">vm</span><span class="p">.</span><span class="nx">$el</span> <span class="o">=</span> <span class="nf">patch</span><span class="p">(</span><span class="nx">vm</span><span class="p">.</span><span class="nx">$el</span><span class="p">,</span> <span class="nx">vnode</span><span class="p">);</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+</pre></table></code></div></div><div class="language-javascript highlighter-rouge"><div class="highlight"><code><table class="rouge-table"><tbody><tr><td class="rouge-gutter gl"><pre class="lineno">1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+21
+22
+23
+24
+25
+26
+27
+28
+29
+30
+31
+32
+33
+34
+35
+36
+37
+38
+39
+40
+41
+42
+43
+44
+45
+46
+47
+48
+49
+50
+51
+52
+53
+54
+55
+56
+57
+58
+59
+60
+61
+62
+63
+</pre><td class="rouge-code"><pre><span class="c1">// src/vdom/patch.js</span>
+
+<span class="c1">// patch用来渲染和更新视图，本文只介绍初次渲染的逻辑</span>
+<span class="k">export</span> <span class="kd">function</span> <span class="nf">patch</span><span class="p">(</span><span class="nx">oldVnode</span><span class="p">,</span> <span class="nx">vnode</span><span class="p">)</span> <span class="p">{</span>
+    <span class="c1">// 判断传入的oldVnode是否是一个真实元素</span>
+    <span class="c1">// 这里很关键，初次渲染，传入的vm.$el就是传入的el选项，所以是真实DOM</span>
+    <span class="c1">// 如果不是初始渲染而是视图更新的时候，vm.$el就被替换成了更新之前的旧的虚拟DOM</span>
+    <span class="kd">const</span> <span class="nx">isRealElement</span> <span class="o">=</span> <span class="nx">oldVnode</span><span class="p">.</span><span class="nx">nodeType</span><span class="p">;</span>
+    <span class="k">if </span><span class="p">(</span><span class="nx">isRealElement</span><span class="p">)</span> <span class="p">{</span>
+        <span class="c1">// 这里是初次渲染的逻辑</span>
+        <span class="kd">const</span> <span class="nx">oldElm</span> <span class="o">=</span> <span class="nx">oldVnode</span><span class="p">;</span>
+        <span class="kd">const</span> <span class="nx">parentElm</span> <span class="o">=</span> <span class="nx">oldElm</span><span class="p">.</span><span class="nx">parentNode</span><span class="p">;</span>
+        <span class="c1">// 将虚拟DOM转化成真实DOM节点</span>
+        <span class="kd">let</span> <span class="nx">el</span> <span class="o">=</span> <span class="nf">createElm</span><span class="p">(</span><span class="nx">vnode</span><span class="p">);</span>
+        <span class="c1">// 插入到旧的el节点下一个节点的前面，就相当于插入到老的el节点后面</span>
+        <span class="c1">// 这里不直接使用父元素appendChild是为了不破坏替换的位置</span>
+        <span class="nx">parentElm</span><span class="p">.</span><span class="nf">insertBefore</span><span class="p">(</span><span class="nx">el</span><span class="p">,</span> <span class="nx">oldElm</span><span class="p">.</span><span class="nx">nextSibling</span><span class="p">);</span>
+        <span class="c1">// 删除老的el节点</span>
+        <span class="nx">parentElm</span><span class="p">.</span><span class="nf">removeChild</span><span class="p">(</span><span class="nx">oldVnode</span><span class="p">);</span>
+        <span class="k">return</span> <span class="nx">el</span><span class="p">;</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+
+<span class="c1">// 虚拟DOM转成真实DOM，就是调用原生方法生成DOM树</span>
+<span class="kd">function</span> <span class="nf">createElm</span><span class="p">(</span><span class="nx">vnode</span><span class="p">)</span> <span class="p">{</span>
+    <span class="kd">let</span> <span class="p">{</span> <span class="nx">tag</span><span class="p">,</span> <span class="nx">data</span><span class="p">,</span> <span class="nx">key</span><span class="p">,</span> <span class="nx">children</span><span class="p">,</span> <span class="nx">text</span> <span class="p">}</span> <span class="o">=</span> <span class="nx">vnode</span><span class="p">;</span>
+
+    <span class="c1">// 判断虚拟DOM是元素节点还是文本节点</span>
+    <span class="k">if </span><span class="p">(</span><span class="k">typeof</span> <span class="nx">tag</span> <span class="o">===</span> <span class="dl">'</span><span class="s1">string</span><span class="dl">'</span><span class="p">)</span> <span class="p">{</span>
+        <span class="c1">// 虚拟DOM的el属性指向真实DOM</span>
+        <span class="nx">vnode</span><span class="p">.</span><span class="nx">el</span> <span class="o">=</span> <span class="nb">document</span><span class="p">.</span><span class="nf">createElement</span><span class="p">(</span><span class="nx">tag</span><span class="p">);</span>
+        <span class="c1">// 解析虚拟DOM属性</span>
+        <span class="nf">updateProperties</span><span class="p">(</span><span class="nx">vnode</span><span class="p">);</span>
+        <span class="c1">// 如果有子节点就递归插入到父节点里面</span>
+        <span class="nx">children</span><span class="p">.</span><span class="nf">forEach</span><span class="p">(</span><span class="nx">child</span> <span class="o">=&gt;</span> <span class="p">{</span>
+            <span class="k">return</span> <span class="nx">vnode</span><span class="p">.</span><span class="nx">el</span><span class="p">.</span><span class="nf">appendChild</span><span class="p">(</span><span class="nf">createElm</span><span class="p">(</span><span class="nx">child</span><span class="p">));</span>
+        <span class="p">});</span>
+    <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+        <span class="c1">// 文本节点</span>
+        <span class="nx">vnode</span><span class="p">.</span><span class="nx">el</span> <span class="o">=</span> <span class="nb">document</span><span class="p">.</span><span class="nf">createTextNode</span><span class="p">(</span><span class="nx">text</span><span class="p">);</span>
+    <span class="p">}</span>
+
+    <span class="k">return</span> <span class="nx">vnode</span><span class="p">.</span><span class="nx">el</span><span class="p">;</span>
+<span class="p">}</span>
+
+<span class="c1">// 解析vnode的data属性，映射到真实DOM上</span>
+<span class="kd">function</span> <span class="nf">updateProperties</span><span class="p">(</span><span class="nx">vnode</span><span class="p">)</span> <span class="p">{</span>
+    <span class="kd">let</span> <span class="nx">newProps</span> <span class="o">=</span> <span class="nx">vnode</span><span class="p">.</span><span class="nx">data</span> <span class="o">||</span> <span class="p">{};</span>
+    <span class="kd">let</span> <span class="nx">el</span> <span class="o">=</span> <span class="nx">vnode</span><span class="p">.</span><span class="nx">el</span><span class="p">;</span> <span class="c1">// 真实节点</span>
+
+    <span class="k">for </span><span class="p">(</span><span class="kd">let</span> <span class="nx">key</span> <span class="k">in</span> <span class="nx">newProps</span><span class="p">)</span> <span class="p">{</span>
+        <span class="c1">// style需要特殊处理下</span>
+        <span class="k">if </span><span class="p">(</span><span class="nx">key</span> <span class="o">===</span> <span class="dl">'</span><span class="s1">style</span><span class="dl">'</span><span class="p">)</span> <span class="p">{</span>
+            <span class="k">for </span><span class="p">(</span><span class="kd">let</span> <span class="nx">styleName</span> <span class="k">in</span> <span class="nx">newProps</span><span class="p">.</span><span class="nx">style</span><span class="p">)</span> <span class="p">{</span>
+                <span class="nx">el</span><span class="p">.</span><span class="nx">style</span><span class="p">[</span><span class="nx">styleName</span><span class="p">]</span> <span class="o">=</span> <span class="nx">newProps</span><span class="p">.</span><span class="nx">style</span><span class="p">[</span><span class="nx">styleName</span><span class="p">];</span>
+            <span class="p">}</span>
+        <span class="p">}</span> <span class="k">else</span> <span class="k">if </span><span class="p">(</span><span class="nx">key</span> <span class="o">===</span> <span class="dl">'</span><span class="s1">class</span><span class="dl">'</span><span class="p">)</span> <span class="p">{</span>
+            <span class="nx">el</span><span class="p">.</span><span class="nx">className</span> <span class="o">=</span> <span class="nx">newProps</span><span class="p">.</span><span class="kd">class</span><span class="p">;</span>
+        <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+            <span class="nx">el</span><span class="p">.</span><span class="nf">setAttribute</span><span class="p">(</span><span class="nx">key</span><span class="p">,</span> <span class="nx">newProps</span><span class="p">[</span><span class="nx">key</span><span class="p">])</span>
+        <span class="p">}</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+</pre></table></code></div></div><p>_update核心方法就是patch，初始化渲染和后续更新都是共用这一个方法，只是传入的第一个参数不同。初始化渲染总体思路就是根据虚拟DOM调用原生js方法创建真实DOM节点并替换掉el选项的位置。</p><h2 id="5_render和_update原型方法的混入">5._render和_update原型方法的混入</h2><div class="language-javascript highlighter-rouge"><div class="highlight"><code><table class="rouge-table"><tbody><tr><td class="rouge-gutter gl"><pre class="lineno">1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+13
+14
+15
+16
+</pre><td class="rouge-code"><pre><span class="c1">// src/index.js</span>
+<span class="k">import</span> <span class="p">{</span> <span class="nx">initMixin</span> <span class="p">}</span> <span class="k">from</span> <span class="dl">'</span><span class="s1">./init.js</span><span class="dl">'</span><span class="p">;</span>
+<span class="k">import</span> <span class="p">{</span> <span class="nx">lifecycleMixin</span> <span class="p">}</span> <span class="k">from</span> <span class="dl">'</span><span class="s1">./lifecycle</span><span class="dl">'</span><span class="p">;</span>
+<span class="k">import</span> <span class="p">{</span> <span class="nx">renderMixin</span> <span class="p">}</span> <span class="k">from</span> <span class="dl">'</span><span class="s1">./render</span><span class="dl">'</span><span class="p">;</span>
+
+<span class="kd">function</span> <span class="nf">Vue</span><span class="p">(</span><span class="nx">options</span><span class="p">)</span> <span class="p">{</span>
+    <span class="k">this</span><span class="p">.</span><span class="nf">_init</span><span class="p">(</span><span class="nx">options</span><span class="p">);</span>
+<span class="p">}</span>
+
+<span class="nf">initMixin</span><span class="p">(</span><span class="nx">Vue</span><span class="p">);</span>
+
+<span class="nf">renderMixin</span><span class="p">(</span><span class="nx">Vue</span><span class="p">);</span>
+
+<span class="nf">lifecycleMixin</span><span class="p">(</span><span class="nx">Vue</span><span class="p">);</span>
+
+<span class="k">export</span> <span class="k">default</span> <span class="nx">Vue</span><span class="p">;</span>
+</pre></table></code></div></div></div><div class="post-tail-wrapper text-muted"><div class="post-meta mb-3"> <i class="far fa-folder-open fa-fw mr-1"></i> <a href='/categories/vue/'>Vue</a></div><div class="post-tags"> <i class="fa fa-tags fa-fw mr-1"></i> <a href="/tags/vue%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/" class="post-tag no-text-decoration" >Vue源码分析</a></div><div class="post-tail-bottom d-flex justify-content-between align-items-center mt-3 pt-5 pb-2"><div class="license-wrapper"> This post is licensed under <a href="https://creativecommons.org/licenses/by/4.0/">CC BY 4.0</a> by the author.</div><div class="share-wrapper"> <span class="share-label text-muted mr-1">Share</span> <span class="share-icons"> <a href="https://twitter.com/intent/tweet?text=手写Vue2.0源码（三）-初始渲染原理 - Layman&url=https://hanxitao.github.io/posts/Vue%E5%88%9D%E5%A7%8B%E6%B8%B2%E6%9F%93%E5%8E%9F%E7%90%86/" data-toggle="tooltip" data-placement="top" title="Twitter" target="_blank" rel="noopener" aria-label="Twitter"> <i class="fa-fw fab fa-twitter"></i> </a> <a href="https://www.facebook.com/sharer/sharer.php?title=手写Vue2.0源码（三）-初始渲染原理 - Layman&u=https://hanxitao.github.io/posts/Vue%E5%88%9D%E5%A7%8B%E6%B8%B2%E6%9F%93%E5%8E%9F%E7%90%86/" data-toggle="tooltip" data-placement="top" title="Facebook" target="_blank" rel="noopener" aria-label="Facebook"> <i class="fa-fw fab fa-facebook-square"></i> </a> <a href="https://telegram.me/share?text=手写Vue2.0源码（三）-初始渲染原理 - Layman&url=https://hanxitao.github.io/posts/Vue%E5%88%9D%E5%A7%8B%E6%B8%B2%E6%9F%93%E5%8E%9F%E7%90%86/" data-toggle="tooltip" data-placement="top" title="Telegram" target="_blank" rel="noopener" aria-label="Telegram"> <i class="fa-fw fab fa-telegram"></i> </a> <i class="fa-fw fas fa-link small" onclick="copyLink()" data-toggle="tooltip" data-placement="top" title="Copy link"></i> </span></div></div></div></div></div><div id="panel-wrapper" class="col-xl-3 pl-2 text-muted topbar-down"><div class="access"><div id="access-lastmod" class="post"> <span>Recent Update</span><ul class="post-content pl-0 pb-1 ml-1 mt-2"><li><a href="/posts/Vue%E4%B9%8Bdiff%E7%AE%97%E6%B3%95%E5%8E%9F%E7%90%86/">手写Vue2.0源码（六）-diff算法原理</a><li><a href="/posts/Vue%E8%AE%A1%E7%AE%97%E5%B1%9E%E6%80%A7%E5%8E%9F%E7%90%86/">手写Vue2.0源码（八）-计算属性原理</a><li><a href="/posts/Vue%E6%8C%87%E4%BB%A4%E4%B9%8B%E5%8E%BB%E9%99%A4input%E5%80%BC%E4%B8%AD%E9%97%B4%E7%A9%BA%E6%A0%BC/">Vue指令之去除input值中间空格</a><li><a href="/posts/debounce-and-throttle/">防抖节流</a><li><a href="/posts/Vue%E6%B8%B2%E6%9F%93%E6%9B%B4%E6%96%B0%E5%8E%9F%E7%90%86/">手写Vue2.0源码（四）-渲染更新原理</a></ul></div><div id="access-tags"> <span>Trending Tags</span><div class="d-flex flex-wrap mt-3 mb-1 mr-3"> <a class="post-tag" href="/tags/css/">css</a> <a class="post-tag" href="/tags/everydaylearn/">EverydayLearn</a> <a class="post-tag" href="/tags/js%E7%9B%B8%E5%85%B3/">js相关</a> <a class="post-tag" href="/tags/vue%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/">Vue源码分析</a> <a class="post-tag" href="/tags/leetcode/">LeetCode</a> <a class="post-tag" href="/tags/%E6%89%8B%E5%86%99/">手写</a> <a class="post-tag" href="/tags/javascript/">javascript</a> <a class="post-tag" href="/tags/vue/">Vue</a> <a class="post-tag" href="/tags/jekyll/">jekyll</a> <a class="post-tag" href="/tags/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84/">数据结构</a></div></div></div><script src="https://cdn.jsdelivr.net/gh/afeld/bootstrap-toc@1.0.1/dist/bootstrap-toc.min.js"></script><div id="toc-wrapper" class="pl-0 pr-4 mb-5"> <span class="pl-3 pt-2 mb-2">Contents</span><nav id="toc" data-toggle="toc"></nav></div></div></div><div class="row"><div class="col-12 col-lg-11 col-xl-8"><div id="post-extend-wrapper" class="pl-1 pr-1 pl-sm-2 pr-sm-2 pl-md-4 pr-md-4"><div id="related-posts" class="mt-5 mb-2 mb-sm-4"><h3 class="pt-2 mt-1 mb-4 ml-1" data-toc-skip>Further Reading</h3><div class="card-deck mb-4"><div class="card"> <a href="/posts/vue%E5%93%8D%E5%BA%94%E5%BC%8F%E5%8E%9F%E7%90%86/"><div class="card-body"> <span class="timeago small" > Nov 18, 2021 <i class="unloaded">2021-11-18T09:10:00+08:00</i> </span><h3 class="pt-0 mt-1 mb-3" data-toc-skip>手写Vue2.0源码（一）-响应式数据原理</h3><div class="text-muted small"><p> 正文 Vue的一个核心特点是数据驱动。如果按照以往Jquery的思想，数据变化了想要同步到视图就必须要手动操作DOM更新，但是Vue帮我们做到了数据变动自动更新视图的功能，那在Vue内部就一定有一个机制能监听到数据变化然后触发更新。 1.数据初始化 new Vue({ el: '#app', router, store, render: h =&gt; h(App) }...</p></div></div></a></div><div class="card"> <a href="/posts/Vue%E6%A8%A1%E6%9D%BF%E7%BC%96%E8%AF%91%E5%8E%9F%E7%90%86/"><div class="card-body"> <span class="timeago small" > Nov 20, 2021 <i class="unloaded">2021-11-20T09:10:00+08:00</i> </span><h3 class="pt-0 mt-1 mb-3" data-toc-skip>手写Vue2.0源码（二）-模板编译原理</h3><div class="text-muted small"><p> 正文 new Vue({ el: '#app', data() { return { a: 111 }; }, render(h) { return h('div', { id: 'a' }, 'hello') }, template: `&lt;div id='a'&g...</p></div></div></a></div><div class="card"> <a href="/posts/Vue%E6%B8%B2%E6%9F%93%E6%9B%B4%E6%96%B0%E5%8E%9F%E7%90%86/"><div class="card-body"> <span class="timeago small" > Nov 27, 2021 <i class="unloaded">2021-11-27T15:03:00+08:00</i> </span><h3 class="pt-0 mt-1 mb-3" data-toc-skip>手写Vue2.0源码（四）-渲染更新原理</h3><div class="text-muted small"><p> 正文 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 // Vue实例化 let vm = new Vue({ el: '#app', data() { return { a: 123 }; }, ...</p></div></div></a></div></div></div><div class="post-navigation d-flex justify-content-between"> <a href="/posts/%E5%87%BD%E6%95%B0%E9%87%8D%E8%BD%BD/" class="btn btn-outline-primary" prompt="Older"><p>函数重载</p></a> <a href="/posts/Vue%E6%B8%B2%E6%9F%93%E6%9B%B4%E6%96%B0%E5%8E%9F%E7%90%86/" class="btn btn-outline-primary" prompt="Newer"><p>手写Vue2.0源码（四）-渲染更新原理</p></a></div></div></div></div><footer class="d-flex w-100 justify-content-center"><div class="d-flex justify-content-between align-items-center"><div class="footer-left"><p class="mb-0"> © 2023 <a href="https://twitter.com/username">hanxitao</a>. <span data-toggle="tooltip" data-placement="top" title="Except where otherwise noted, the blog posts on this site are licensed under the Creative Commons Attribution 4.0 International (CC BY 4.0) License by the author.">Some rights reserved.</span></p></div><div class="footer-right"><p class="mb-0"> Powered by <a href="https://jekyllrb.com" target="_blank" rel="noopener">Jekyll</a> with <a href="https://github.com/cotes2020/jekyll-theme-chirpy" target="_blank" rel="noopener">Chirpy</a> theme.</p></div></div></footer></div><div id="search-result-wrapper" class="d-flex justify-content-center unloaded"><div class="col-12 col-sm-11 post-content"><div id="search-hints"><h4 class="text-muted mb-4">Trending Tags</h4><a class="post-tag" href="/tags/css/">css</a> <a class="post-tag" href="/tags/everydaylearn/">EverydayLearn</a> <a class="post-tag" href="/tags/js%E7%9B%B8%E5%85%B3/">js相关</a> <a class="post-tag" href="/tags/vue%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/">Vue源码分析</a> <a class="post-tag" href="/tags/leetcode/">LeetCode</a> <a class="post-tag" href="/tags/%E6%89%8B%E5%86%99/">手写</a> <a class="post-tag" href="/tags/javascript/">javascript</a> <a class="post-tag" href="/tags/vue/">Vue</a> <a class="post-tag" href="/tags/jekyll/">jekyll</a> <a class="post-tag" href="/tags/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84/">数据结构</a></div><div id="search-results" class="d-flex flex-wrap justify-content-center text-muted mt-3"></div></div></div></div><div id="mask"></div><a id="back-to-top" href="#" aria-label="back-to-top" class="btn btn-lg btn-box-shadow" role="button"> <i class="fas fa-angle-up"></i> </a> <script src="https://cdn.jsdelivr.net/npm/simple-jekyll-search@1.7.3/dest/simple-jekyll-search.min.js"></script> <script> SimpleJekyllSearch({ searchInput: document.getElementById('search-input'), resultsContainer: document.getElementById('search-results'), json: '/assets/js/data/search.json', searchResultTemplate: '<div class="pl-1 pr-1 pl-sm-2 pr-sm-2 pl-lg-4 pr-lg-4 pl-xl-0 pr-xl-0"> <a href="https://hanxitao.github.io{url}">{title}</a><div class="post-meta d-flex flex-column flex-sm-row text-muted mt-1 mb-1"> {categories} {tags}</div><p>{snippet}</p></div>', noResultsText: '<p class="mt-5">Oops! No result founds.</p>', templateMiddleware: function(prop, value, template) { if (prop === 'categories') { if (value === '') { return `${value}`; } else { return `<div class="mr-sm-4"><i class="far fa-folder fa-fw"></i>${value}</div>`; } } if (prop === 'tags') { if (value === '') { return `${value}`; } else { return `<div><i class="fa fa-tag fa-fw"></i>${value}</div>`; } } } }); </script>
